@@ -1,6 +1,7 @@
 // Author: Nathan Pak
 // Section: T1
 // Documentation: found code for incrementing BigIntegers from java2s.com. Referenced stack overflow on the Java Executor Services to exit a service.
+// Made with Intellij IDE.
 
 import java.math.*;
 import java.util.*;
@@ -57,7 +58,7 @@ public class Factoring extends Thread{
         BigInteger squarert = n.sqrt();
         long startTime = System.nanoTime(); // start the timer
         for(BigInteger i=BigInteger.valueOf(2); i.compareTo(squarert)==-1 || i.compareTo(squarert)==0; i=increment(i)){ // loop from 2 to sqrt(n)
-            if(i.isProbablePrime(1) && n.mod(i)==BigInteger.valueOf(0)){
+            if(i.isProbablePrime(1) && n.mod(i)==BigInteger.valueOf(0)){ // only check for potential factors that are prime
                 System.out.println("Found a factor = " + i);
                 double timing = (System.nanoTime() - startTime) / 1.0E09;
                 System.out.println("It took " + timing + " seconds.");
@@ -73,6 +74,8 @@ public class Factoring extends Thread{
 
     static void pollardsRho(BigInteger n){
         System.out.println("Pollard's Rho");
+        // initialize a, b, and d
+        // using equation x^2 + 1 (mod n)
         BigInteger a = new BigInteger("2");
         BigInteger b = new BigInteger("2");
         BigInteger d = new BigInteger("1");
@@ -85,7 +88,7 @@ public class Factoring extends Thread{
             b = increment(b.multiply(b)).mod(n);
 
             d = (a.subtract(b)).gcd(n);
-            if(d.compareTo(new BigInteger("1")) == 1 && d.compareTo(n) == -1){
+            if(d.compareTo(new BigInteger("1")) == 1 && d.compareTo(n) == -1){ // check if 1 < d < n
                 System.out.println("Found a factor = " + d);
                 System.out.println("a = " + a + ", b = " + b);
                 double timing = (System.nanoTime() - startTime) / 1.0E09;
@@ -210,15 +213,35 @@ public class Factoring extends Thread{
                     double timing = (System.nanoTime()-startTime) / 1.0E09;
                     System.out.println("It took " + timing + " seconds.");
                     found = true;
-                }
-                else{
-                    System.out.println("Try again: could not find a factor\n");
+                    return;
                 }
             }
-            /*else if(perfSquareIndex<0){ // combine equations
-
-            }*/
-            else if(tries<2)
+            //else if(perfSquareIndex<0){ // combine equations
+                for(int i=0; i<r; i++){
+                    for(int j=i+1; j<r; j++){
+                        int []testRow = new int[cNot[0].length];
+                        testRow = merge(realC[i], realC[j]);
+                        if(checkValidCombo(testRow)){
+                            int []allFactors = merge(c[i],c[j]);
+                            BigInteger X = randomX[i].multiply(randomX[j]);
+                            BigInteger Y = new BigInteger("1");
+                            for(int w=0; w<allFactors.length; w++){
+                                if(allFactors[w]>0){
+                                    Y = Y.multiply(BigInteger.valueOf(FB[w]).pow(testRow[w]/2));
+                                }
+                            }
+                            BigInteger gcd = X.subtract(Y).gcd(n);
+                            if (gcd.compareTo(BigInteger.valueOf(1)) != 0 && gcd.compareTo(n) != 0) {
+                                System.out.println("Found a factor: " + gcd);
+                                double timing = (System.nanoTime()-startTime) / 1.0E09;
+                                System.out.println("It took " + timing + " seconds.");
+                                return;
+                            }
+                        }
+                    }
+                }
+            //}
+             if(tries<2)
                 System.out.println("Try again: could not find a factor\n");
 
             /*System.out.println(Arrays.deepToString(realC));
@@ -235,10 +258,28 @@ public class Factoring extends Thread{
             System.out.println("It took " + timing + " seconds.");
         }
     }
+
+    final static public int[] merge(int[] array1, int[] array2) {
+        int[] res = new int[array1.length];
+        for(int i=0; i<array1.length; i++){
+            res[i] = array1[i] + array2[i];
+        }
+        return res;
+    }
+
     static boolean checkPegs(int array[], int size)
     {
         for (int i = 0; i < size; i++) {
             if(array[i] != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static boolean checkValidCombo(int []array){
+        for(int i=0; i<array.length; i++){
+            if(array[i] % 2 != 0){
                 return false;
             }
         }
